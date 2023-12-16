@@ -1,2 +1,2 @@
 # n2t
-nand2tetris with Rust
+nand2tetris
