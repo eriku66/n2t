@@ -26,19 +26,47 @@
 // if (f == 0)  sets out = x & y  // bitwise and
 // if (no == 1) sets out = !out   // bitwise not
 CHIP ALU {
-    IN  
-        x[16], y[16],  // 16-bit inputs        
+    IN
+        x[16], y[16],  // 16-bit inputs
         zx, // zero the x input?
         nx, // negate the x input?
         zy, // zero the y input?
         ny, // negate the y input?
         f,  // compute (out = x + y) or (out = x & y)?
         no; // negate the out output?
-    OUT 
+    OUT
         out[16], // 16-bit output
         zr,      // (out == 0, 1, 0)
         ng;      // (out < 0,  1, 0)
 
     PARTS:
-    //// Replace this comment with your code.
+    // Operation of x
+    Mux16(a=x, b=false, sel=zx, out=ZAppliedX);
+    Not16(in=ZAppliedX, out=ZNAppliedX);
+    Mux16(a=ZAppliedX, b=ZNAppliedX, sel=nx, out=operatedX);
+
+    // Operations of y
+    Mux16(a=y, b=false, sel=zy, out=ZAppliedY);
+    Not16(in=ZAppliedY, out=ZNAppliedY);
+    Mux16(a=ZAppliedY, b=ZNAppliedY, sel=ny, out=operatedY);
+
+    // Computation of x and y
+    Add16(a=operatedX, b=operatedY, out=sumXY);
+    And16(a=operatedX, b=operatedY, out=andXY);
+    Mux16(a=andXY, b=sumXY, sel=f, out=computationResult);
+    Not16(in=computationResult, out=notComputationResult);
+    Mux16(a=computationResult, b=notComputationResult, sel=no, out=result);
+
+    And16(a=result, b=true, out=out);
+
+    And16(a=result, b=true, out[0..7]=firstHalfResult, out[8..15]=secondHalfResult);
+
+    // Check if out is zero
+    Or8Way(in=firstHalfResult, out=firstHalfOr8Way);
+    Or8Way(in=secondHalfResult, out=secondHalfOr8Way);
+    Or(a=firstHalfOr8Way, b=secondHalfOr8Way, out=notZero);
+    Not(in=notZero, out=zr);
+
+    // Determin the sign
+    And16(a=result, b=true, out[15]=ng);
 }
