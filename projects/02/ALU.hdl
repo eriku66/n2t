@@ -55,18 +55,11 @@ CHIP ALU {
     And16(a=transformedX, b=transformedY, out=andXY);
     Mux16(a=andXY, b=sumXY, sel=f, out=rawResult);
     Not16(in=rawResult, out=notRawResult);
-    Mux16(a=rawResult, b=notRawResult, sel=no, out=finalResult);
-
-    And16(a=finalResult, b=true, out=out);
-
-    And16(a=finalResult, b=true, out[0..7]=lower8Bits, out[8..15]=upper8Bits);
+    Mux16(a=rawResult, b=notRawResult, sel=no, out[0..7]=lower8Bits, out[8..15]=upper8Bits, out[15]=ng, out=out);
 
     // Check if out is zero
     Or8Way(in=lower8Bits, out=lower8BitsOr);
     Or8Way(in=upper8Bits, out=upper8BitsOr);
     Or(a=lower8BitsOr, b=upper8BitsOr, out=notZero);
     Not(in=notZero, out=zr);
-
-    // Determin the sign
-    And16(a=finalResult, b=true, out[15]=ng);
 }
