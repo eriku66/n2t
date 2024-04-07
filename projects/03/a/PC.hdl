@@ -18,13 +18,12 @@ CHIP PC {
     OUT out[16];
 
     PARTS:
-    Inc16(in=rOut, out=incrementedROut);
-    Mux16(a=rOut, b=incrementedROut, sel=inc, out=transformedROut);
-    Mux16(a=transformedROut, b=in, sel=load, out=inOrROut);
-    Mux16(a=inOrROut, b=false, sel=reset, out=rIn);
+    Inc16(in=registerOut, out=incrementedRegisterOut);
+    Mux16(a=registerOut, b=incrementedRegisterOut, sel=inc, out=transformedRegisterOut);
+    Mux16(a=transformedRegisterOut, b=in, sel=load, out=inOrRegisterOut);
+    Mux16(a=inOrRegisterOut, b=false, sel=reset, out=registerIn);
 
-    Or(a=inc, b=reset, out=incOrReset);
-    Or(a=load, b=incOrReset, out=rLoad);
+    Or8Way(in[0]=inc, in[1]=reset, in[2]=load, in[3..7]=false, out=registerLoad);
 
-    Register(in=rIn, load=rLoad, out=rOut, out=out);
+    Register(in=registerIn, load=registerLoad, out=registerOut, out=out);
 }
